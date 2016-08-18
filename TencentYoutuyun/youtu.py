@@ -653,7 +653,41 @@ class YouTu(object):
             return {'httpcode':0, 'errorcode':self.IMAGE_NETWORK_ERROR, 'errormsg':str(e)}
                 
         return ret
-    
+
+    def porndetect(self, image_path, data_type = 0, seq = ''):
+
+        req_type='imageporn'
+        headers = self.get_headers(req_type)
+        url = self.generate_res_url(req_type, 1)
+
+        data = {
+            "app_id": self._appid,
+            "seq": seq
+        }
+
+        if len(image_path) == 0:
+            return {'httpcode':0, 'errorcode':self.IMAGE_PATH_EMPTY, 'errormsg':'IMAGE_PATH_EMPTY'}
+
+        if data_type == 0:
+            filepath = os.path.abspath(image_path)
+            if not os.path.exists(filepath):
+                return {'httpcode':0, 'errorcode':self.IMAGE_FILE_NOT_EXISTS, 'errormsg':'IMAGE_FILE_NOT_EXISTS'}
+
+            data["image"] = base64.b64encode(open(filepath, 'rb').read()).rstrip()
+        else:
+            data["url"] = image_path
+
+        r = {}
+        try:
+            r = requests.post(url, headers=headers, data = json.dumps(data))
+            if r.status_code != 200:
+                return {'httpcode':r.status_code, 'errorcode':'', 'errormsg':''}
+
+            ret = r.json()
+        except Exception as e:
+            return {'httpcode':0, 'errorcode':self.IMAGE_NETWORK_ERROR, 'errormsg':str(e)}
+
+        return ret
 
     
    
